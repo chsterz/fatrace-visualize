@@ -3,20 +3,10 @@
 
 #include <QMainWindow>
 #include <QFile>
-#include <QHash>
-#include <QString>
-#include <QPair>
-#include <QDateTime>
 
-enum class FileAction{
-    Close = 1,
-    Read  = 2,
-    Open  = 4,
-    Write = 8
-};
+#include "renderarea.h"
 
-using micros = unsigned long;
-using FileEvent = QPair<FileAction, quint64>;
+
 
 class MainWindow : public QMainWindow
 {
@@ -24,15 +14,16 @@ class MainWindow : public QMainWindow
 
 public:
 
-
     MainWindow(const QString &fileName, QWidget *parent);
     ~MainWindow();
 
     void parseFile(QFile &file);
 
-    QMultiHash<QString, FileEvent> m_events;
+    QMultiMap<QString, FileEvent> m_events;
     quint64 m_firstTimeStamp;
     quint64 m_lastTimeStamp;
+
+    RenderArea *m_renderArea;
 };
 
 #endif // MAINWINDOW_H

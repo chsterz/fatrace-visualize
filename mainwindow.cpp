@@ -6,6 +6,8 @@
 #include <QRegularExpressionMatch>
 #include <limits>
 
+
+
 void MainWindow::parseFile(QFile &file)
 {
     QTextStream in(&file);
@@ -32,6 +34,7 @@ void MainWindow::parseFile(QFile &file)
         in >> modeString;
         in >> fileString;
 
+        //insert fused options separately ORC -> O, R, and C
         FileAction action;
         for(const QChar &c: modeString)
         {
@@ -58,6 +61,8 @@ MainWindow::MainWindow(const QString &fileName, QWidget *parent = nullptr)
         parseFile(fatraceFile);
     else
         qWarning() << "Could not open file" << fatraceFile.fileName();
+    m_renderArea = new RenderArea(&m_events);
+    setCentralWidget(m_renderArea);
 }
 
 MainWindow::~MainWindow()
