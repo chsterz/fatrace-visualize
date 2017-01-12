@@ -7,12 +7,24 @@
 
 #include <climits>
 
+namespace Design
+{
+    static QColor BackgroundGray = QColor(242,242,242,255);
+    static QColor LibraryGreen = QColor(78, 154, 6, 255);
+    static QColor QmlBlue = QColor(32, 74, 135, 255);
+    static QColor ReadActionRed = QColor(239, 41, 41, 255);
+    static QColor TimeLineGray = QColor(186, 189, 182, 255);
+    static QColor TimeLineGraySecondary = QColor(211, 215, 207, 255);
+}
+
 RenderArea::RenderArea(FileEventList *eventData, quint64 lastTimeStamp, QWidget *parent)
     : QWidget(parent),
       m_events(eventData),
       m_lastTimeStamp(lastTimeStamp)
 {
-    setBackgroundRole(QPalette::Base);
+    QPalette palette;
+    palette.setColor(QPalette::Background, Design::BackgroundGray);
+    setPalette(palette);
     setAutoFillBackground(true);
     setMouseTracking(true);
 }
@@ -35,9 +47,37 @@ void RenderArea::paintEvent(QPaintEvent *)
     float unit = width() / static_cast<float>(m_lastTimeStamp);
 
     QPainter painter(this);
-    painter.setFont(QFont(painter.font().family(), 8));
+    painter.setRenderHints(QPainter::HighQualityAntialiasing, true);
+    painter.setFont(QFont(painter.font().family(), 11));
     QFontMetrics fm(painter.font());
 
+    //Draw rough timelines
+    painter.setPen(Design::TimeLineGray);
+    QPen pen = painter.pen();
+    pen.setWidth(2);
+    painter.setPen(pen);
+    for(int i = 1; i < m_lastTimeStamp/1000/1000; i++)
+    {
+        painter.drawLine(QLine(1000 * 1000 * unit * i, 0, 1000 * 1000 * unit * i, height()));
+    }
+
+    //Draw finegrained timelines
+    painter.setPen(Design::TimeLineGraySecondary);
+    for(int i = 1; i < m_lastTimeStamp/1000/100; i++)
+    {
+        painter.drawLine(QLine(1000 * 100 * unit * i, 0, 1000 * 100 * unit * i, height()));
+    }
+
+    //Draw Time Labels
+    painter.setPen(Design::TimeLineGray);
+    for (int i = 1; i < m_lastTimeStamp/1000/1000; i++)
+    {
+        for (int j = 1000; j < height(); j += 1000)
+            painter.drawText(QPoint(1000 * 1000 * unit * i + 4, j), QString("%1\u2009s").arg(i));
+    }
+
+
+    //Draw the events
     for (int i=0; i<m_events->size(); i++)
     {
         const NamedEventList &fileEvents = m_events->at(i);
@@ -45,11 +85,10 @@ void RenderArea::paintEvent(QPaintEvent *)
 
         float xOpen = std::numeric_limits<float>::quiet_NaN();
 
-
         if (fileEvents.filename.contains(".so"))
-            painter.setPen(Qt::darkGreen);
+            painter.setPen(Design::LibraryGreen);
         else if (fileEvents.filename.contains(".qml"))
-            painter.setPen(Qt::darkBlue);
+            painter.setPen(Design::QmlBlue);
         else if (fileEvents.filename.contains(".png"))
             painter.setPen(Qt::darkCyan);
         else
@@ -84,7 +123,7 @@ void RenderArea::paintEvent(QPaintEvent *)
         }
         for (const auto &event: fileEvents.events)
         {
-            painter.setPen(Qt::red);
+            painter.setPen(Design::ReadActionRed);
             if (event.first == FileAction::Read)
             {
                 if (m_currentlySelected == i)

@@ -95,7 +95,6 @@ void MainWindow::parseFile(QFile &file)
 
     m_lastTimeStamp = m_lastTimeStamp - m_firstTimeStamp;
     m_firstTimeStamp = 0;
-
 }
 
 void MainWindow::openNewFile()
