@@ -95,17 +95,34 @@ void MainWindow::parseFile(QFile &file)
 
     m_lastTimeStamp = m_lastTimeStamp - m_firstTimeStamp;
     m_firstTimeStamp = 0;
+
 }
 
-
-MainWindow::MainWindow(const QString &fileName, QWidget *parent = nullptr)
-    : QMainWindow(parent)
+void MainWindow::openNewFile()
 {
-    QFile fatraceFile(fileName);
+    QString openFilename = QFileDialog::getOpenFileName(this,"Select a fatrace file.");
+    QFile fatraceFile(openFilename);
     if (fatraceFile.open(QFile::ReadOnly))
         parseFile(fatraceFile);
     else
         qWarning() << "Could not open file" << fatraceFile.fileName();
+}
+
+
+MainWindow::MainWindow(const QString &filename, QWidget *parent)
+    : QMainWindow(parent)
+{
+    QString openFilename;
+    if (filename.isEmpty())
+        openFilename = QFileDialog::getOpenFileName(this,"Select a fatrace file.");
+    else
+        openFilename = filename;
+    QFile fatraceFile(openFilename);
+    if (fatraceFile.open(QFile::ReadOnly))
+        parseFile(fatraceFile);
+    else
+        qWarning() << "Could not open file" << fatraceFile.fileName();
+
     setMinimumSize(QSize(1920, 1080));
     m_renderArea = new RenderArea(&m_events, m_lastTimeStamp);
     m_scrollArea = new QScrollArea(this);
@@ -113,6 +130,15 @@ MainWindow::MainWindow(const QString &fileName, QWidget *parent = nullptr)
     m_scrollArea->setWidgetResizable(true);
     m_scrollArea->show();
     setCentralWidget(m_scrollArea);
+
+    m_menuBar = new QMenuBar();
+    m_menu = new QMenu("File");
+    m_menu->addAction("Open…");
+    connect(m_menu->actions().first(), SIGNAL(triggered()), this, SLOT(openNewFile()));
+
+    m_menuBar->addMenu(m_menu);
+    m_menuBar->show();
+    setMenuBar(m_menuBar);
 }
 
 MainWindow::~MainWindow()
