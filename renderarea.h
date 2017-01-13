@@ -50,10 +50,15 @@ class RenderArea : public QWidget
 public:
     explicit RenderArea(FileEventList *eventData, quint64 lastTimeStamp, QWidget *parent = nullptr);
     QSize minimumSizeHint() const Q_DECL_OVERRIDE;
+    QSize sizeHint() const Q_DECL_OVERRIDE;
 
     void paintEvent(QPaintEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    void wheelEvent(QWheelEvent *wheel) Q_DECL_OVERRIDE;
 
+private:
+    int m_horizontalScrollPosition;
+    QSize m_size;
     FileEventList *m_events;
     quint64 m_lastTimeStamp;
     int m_currentlySelected;

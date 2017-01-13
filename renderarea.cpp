@@ -3,6 +3,7 @@
 
 #include <QPainter>
 #include <QMouseEvent>
+#include <QWheelEvent>
 #include <QFontMetrics>
 
 #include <climits>
@@ -20,8 +21,10 @@ namespace Design
 RenderArea::RenderArea(FileEventList *eventData, quint64 lastTimeStamp, QWidget *parent)
     : QWidget(parent),
       m_events(eventData),
-      m_lastTimeStamp(lastTimeStamp)
+      m_lastTimeStamp(lastTimeStamp),
+      m_horizontalScrollPosition(0)
 {
+    m_size = QSize(1800, 2 * m_events->size() + 40);
     QPalette palette;
     palette.setColor(QPalette::Background, Design::BackgroundGray);
     setPalette(palette);
@@ -29,9 +32,14 @@ RenderArea::RenderArea(FileEventList *eventData, quint64 lastTimeStamp, QWidget 
     setMouseTracking(true);
 }
 
+QSize RenderArea::sizeHint() const
+{
+    return m_size;
+}
+
 QSize RenderArea::minimumSizeHint() const
 {
-    return QSize(1800, 2 * m_events->size() + 40);
+    return m_size;
 }
 
 void RenderArea::mouseMoveEvent(QMouseEvent *event)
@@ -39,6 +47,20 @@ void RenderArea::mouseMoveEvent(QMouseEvent *event)
     int ypos = event->pos().y();
     m_currentlySelected = ypos/2;
     update();
+}
+
+void RenderArea::wheelEvent(QWheelEvent *wheel)
+{
+    if (wheel->modifiers() & Qt::ControlModifier)
+    {
+        if (wheel->angleDelta().y() > 0)
+            m_size.scale(m_size.width()*1.1, m_size.height(), Qt::IgnoreAspectRatio);
+        else
+            m_size.scale(m_size.width()*0.9, m_size.height(), Qt::IgnoreAspectRatio);
+        this->resize(m_size);
+        this->update();
+    }
+
 }
 
 void RenderArea::paintEvent(QPaintEvent *)
@@ -143,8 +165,7 @@ void RenderArea::paintEvent(QPaintEvent *)
             painter.setPen(Qt::black);
             painter.drawRect(QRect(0, offset+1, width(), fm.height()-2));
             painter.setPen(Qt::black);
-            bool isLeft = fileEvents.events.first().second*unit < width()/2;
-            QRect rect = QRect(isLeft? width()/2 : 0, offset, width()/2-4, fm.height());
+            QRect rect = QRect(-this->pos().x(), offset, width()/2-4, fm.height());
             painter.drawText(rect, Qt::AlignLeft ,fileEvents.filename);
             offset += fm.height();
         }

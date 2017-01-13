@@ -6,8 +6,27 @@
 #include <QVector>
 #include <QScrollArea>
 #include <QFileDialog>
+#include <QEvent>
+#include <QWheelEvent>
+#include <QDebug>
 
 #include "renderarea.h"
+
+class CtrlWheelFilter : public QObject
+{
+    Q_OBJECT
+
+protected:
+      bool eventFilter(QObject *obj, QEvent *event)
+      {
+          if (event->type() == QEvent::Wheel && static_cast<QWheelEvent *>(event)->modifiers() & Qt::ControlModifier)
+          {
+              event->ignore();
+              return true;
+          }
+          return QObject::eventFilter(obj, event);
+      }
+};
 
 class MainWindow : public QMainWindow
 {
@@ -35,6 +54,7 @@ private:
     QFileDialog *m_fileDialog;
     QScrollArea *m_scrollArea;
     RenderArea *m_renderArea;
+    CtrlWheelFilter *m_wheelfilter;
 };
 
 #endif // MAINWINDOW_H

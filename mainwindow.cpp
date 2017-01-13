@@ -7,6 +7,7 @@
 #include <limits>
 #include <QString>
 #include <QMenuBar>
+#include <QScrollBar>
 #include <QMenu>
 
 void MainWindow::parseFile(QFile &file)
@@ -97,6 +98,7 @@ void MainWindow::parseFile(QFile &file)
     m_firstTimeStamp = 0;
 }
 
+
 void MainWindow::openNewFile()
 {
     QString openFilename = QFileDialog::getOpenFileName(this,"Select a fatrace file.");
@@ -127,6 +129,9 @@ MainWindow::MainWindow(const QString &filename, QWidget *parent)
     m_scrollArea = new QScrollArea(this);
     m_scrollArea->setWidget(m_renderArea);
     m_scrollArea->setWidgetResizable(true);
+
+    m_wheelfilter = new CtrlWheelFilter();
+    m_scrollArea->viewport()->installEventFilter(m_wheelfilter);
     m_scrollArea->show();
     setCentralWidget(m_scrollArea);
 
